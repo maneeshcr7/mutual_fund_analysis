@@ -113,8 +113,8 @@ Returns JSON with scheme metadata and NAV history.
 
 ## Author
 
-Created for mutual fund data analysis and visualization.
+Created as part of an internship project for mutual fund data analysis.
 
 ## License
 
-This project is for educational purposes.
+This project is developed for internship purposes.
