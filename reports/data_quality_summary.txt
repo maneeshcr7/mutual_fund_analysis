@@ -1,0 +1,25 @@
+DATA QUALITY SUMMARY
+================================================================================
+
+📋 Fund Master Dataset:
+  • Total Records: 40
+  • Total Columns: 15
+  • Missing Values: 0 (0.00%)
+  • Duplicate Rows: 0
+
+📈 NAV History Dataset:
+  • Total Records: 46000
+  • Total Columns: 3
+  • Missing Values: 0 (0.00%)
+  • Duplicate Rows: 0
+
+🔗 AMFI Code Validation:
+  • Fund Master Codes: 40
+  • NAV History Codes: 40
+  • Common Codes: 40
+  • Missing in NAV: 0
+  • Match Rate: 100.00%
+
+✅ Overall Quality Assessment:
+  • Data Completeness: GOOD (< 5% missing values)
+  • Code Validation: EXCELLENT (> 95% match)
