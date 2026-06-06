@@ -1,0 +1,123 @@
+2026-06-06 13:44:54,619 - INFO - ============================================================
+2026-06-06 13:44:54,619 - INFO - STARTING DATA CLEANING AND DATABASE LOADING
+2026-06-06 13:44:54,619 - INFO - ============================================================
+2026-06-06 13:44:54,619 - INFO - 
+--- STEP 1: Cleaning datasets ---
+
+2026-06-06 13:44:54,619 - INFO - ============================================================
+2026-06-06 13:44:54,619 - INFO - Cleaning nav_history.csv
+2026-06-06 13:44:54,619 - INFO - ============================================================
+2026-06-06 13:44:54,629 - INFO - Initial rows: 46000
+2026-06-06 13:44:54,690 - INFO - Forward-filling missing NAV for holidays/weekends...
+2026-06-06 13:44:54,897 - INFO - Final rows after forward-fill: 46000
+2026-06-06 13:44:54,897 - INFO - Rows added by forward-fill: 0
+2026-06-06 13:44:54,944 - INFO - Saved cleaned nav_history.csv to data/processed/nav_history_cleaned.csv
+2026-06-06 13:44:54,945 - INFO - ============================================================
+2026-06-06 13:44:54,945 - INFO - Cleaning investor_transactions.csv
+2026-06-06 13:44:54,945 - INFO - ============================================================
+2026-06-06 13:44:54,973 - INFO - Initial rows: 32778
+2026-06-06 13:44:55,012 - INFO - Final rows: 32778
+2026-06-06 13:44:55,014 - INFO - Transaction type distribution:
+transaction_type
+SIP           19716
+Lumpsum        8095
+Redemption     4967
+2026-06-06 13:44:55,015 - INFO - KYC status distribution:
+kyc_status
+Verified    30146
+Pending      2632
+2026-06-06 13:44:55,085 - INFO - Saved cleaned investor_transactions.csv to data/processed/investor_transactions_cleaned.csv
+2026-06-06 13:44:55,085 - INFO - ============================================================
+2026-06-06 13:44:55,085 - INFO - Cleaning scheme_performance.csv
+2026-06-06 13:44:55,085 - INFO - ============================================================
+2026-06-06 13:44:55,087 - INFO - Initial rows: 40
+2026-06-06 13:44:55,090 - INFO - Total anomalies flagged: 0
+2026-06-06 13:44:55,090 - INFO - Final rows: 40
+2026-06-06 13:44:55,092 - INFO - Saved cleaned scheme_performance.csv to data/processed/scheme_performance_cleaned.csv
+2026-06-06 13:44:55,092 - INFO - ============================================================
+2026-06-06 13:44:55,092 - INFO - Cleaning fund_master.csv
+2026-06-06 13:44:55,092 - INFO - ============================================================
+2026-06-06 13:44:55,093 - INFO - Initial rows: 40
+2026-06-06 13:44:55,095 - INFO - Final rows: 40
+2026-06-06 13:44:55,095 - INFO - Saved cleaned fund_master.csv
+2026-06-06 13:44:55,095 - INFO - ============================================================
+2026-06-06 13:44:55,095 - INFO - Cleaning aum_by_fund_house.csv
+2026-06-06 13:44:55,095 - INFO - ============================================================
+2026-06-06 13:44:55,096 - INFO - Initial rows: 90
+2026-06-06 13:44:55,096 - INFO - Final rows: 90
+2026-06-06 13:44:55,097 - INFO - Saved cleaned aum_by_fund_house.csv
+2026-06-06 13:44:55,097 - INFO - ============================================================
+2026-06-06 13:44:55,097 - INFO - Cleaning monthly_sip_inflows.csv
+2026-06-06 13:44:55,097 - INFO - ============================================================
+2026-06-06 13:44:55,097 - INFO - Initial rows: 48
+2026-06-06 13:44:55,098 - INFO - Final rows: 48
+2026-06-06 13:44:55,098 - INFO - Saved cleaned monthly_sip_inflows.csv
+2026-06-06 13:44:55,098 - INFO - ============================================================
+2026-06-06 13:44:55,098 - INFO - Cleaning category_inflows.csv
+2026-06-06 13:44:55,098 - INFO - ============================================================
+2026-06-06 13:44:55,099 - INFO - Initial rows: 144
+2026-06-06 13:44:55,099 - INFO - Final rows: 144
+2026-06-06 13:44:55,099 - INFO - Saved cleaned category_inflows.csv
+2026-06-06 13:44:55,100 - INFO - ============================================================
+2026-06-06 13:44:55,100 - INFO - Cleaning industry_folio_count.csv
+2026-06-06 13:44:55,100 - INFO - ============================================================
+2026-06-06 13:44:55,100 - INFO - Initial rows: 21
+2026-06-06 13:44:55,100 - INFO - Final rows: 21
+2026-06-06 13:44:55,101 - INFO - Saved cleaned industry_folio_count.csv
+2026-06-06 13:44:55,101 - INFO - ============================================================
+2026-06-06 13:44:55,101 - INFO - Cleaning portfolio_holdings.csv
+2026-06-06 13:44:55,101 - INFO - ============================================================
+2026-06-06 13:44:55,101 - INFO - Initial rows: 322
+2026-06-06 13:44:55,102 - INFO - Final rows: 322
+2026-06-06 13:44:55,103 - INFO - Saved cleaned portfolio_holdings.csv
+2026-06-06 13:44:55,103 - INFO - ============================================================
+2026-06-06 13:44:55,103 - INFO - Cleaning benchmark_indices.csv
+2026-06-06 13:44:55,103 - INFO - ============================================================
+2026-06-06 13:44:55,106 - INFO - Initial rows: 8050
+2026-06-06 13:44:55,108 - INFO - Final rows: 8050
+2026-06-06 13:44:55,116 - INFO - Saved cleaned benchmark_indices.csv
+2026-06-06 13:44:55,116 - INFO - 
+--- STEP 2: Creating schema ---
+
+2026-06-06 13:44:55,116 - INFO - Created schema.sql
+2026-06-06 13:44:55,116 - INFO - 
+--- STEP 3: Loading to SQLite ---
+
+2026-06-06 13:44:55,197 - INFO - ============================================================
+2026-06-06 13:44:55,197 - INFO - Loading data to SQLite
+2026-06-06 13:44:55,197 - INFO - ============================================================
+2026-06-06 13:44:55,197 - INFO - Loading dim_fund...
+2026-06-06 13:44:55,203 - INFO - Populating dim_date table...
+2026-06-06 13:44:55,297 - INFO - Populated dim_date with 1608 rows
+2026-06-06 13:44:55,297 - INFO - Loading fact_nav...
+2026-06-06 13:44:55,451 - INFO - Loading fact_transactions...
+2026-06-06 13:44:55,662 - INFO - Loading fact_performance...
+2026-06-06 13:44:55,665 - INFO - Loading fact_aum...
+2026-06-06 13:44:55,667 - INFO - Loading fact_sip_inflows...
+2026-06-06 13:44:55,669 - INFO - Loading fact_category_inflows...
+2026-06-06 13:44:55,671 - INFO - Loading fact_folio_count...
+2026-06-06 13:44:55,673 - INFO - Loading fact_portfolio_holdings...
+2026-06-06 13:44:55,676 - INFO - Loading fact_benchmark_indices...
+2026-06-06 13:44:55,701 - INFO - 
+--- STEP 4: Verifying row counts ---
+
+2026-06-06 13:44:55,739 - INFO - ============================================================
+2026-06-06 13:44:55,739 - INFO - Verifying row counts
+2026-06-06 13:44:55,739 - INFO - ============================================================
+2026-06-06 13:44:55,740 - INFO - dim_fund: Raw=40, Cleaned=40, DB=40 [PASS]
+2026-06-06 13:44:55,741 - INFO - fact_nav: Raw=46000, Cleaned=46000, DB=46000 [PASS]
+2026-06-06 13:44:55,742 - INFO - fact_transactions: Raw=32778, Cleaned=32778, DB=32778 [PASS]
+2026-06-06 13:44:55,742 - INFO - fact_performance: Raw=40, Cleaned=40, DB=40 [PASS]
+2026-06-06 13:44:55,742 - INFO - fact_aum: Raw=90, Cleaned=90, DB=90 [PASS]
+2026-06-06 13:44:55,742 - INFO - fact_sip_inflows: Raw=48, Cleaned=48, DB=48 [PASS]
+2026-06-06 13:44:55,743 - INFO - fact_category_inflows: Raw=144, Cleaned=144, DB=144 [PASS]
+2026-06-06 13:44:55,743 - INFO - fact_folio_count: Raw=21, Cleaned=21, DB=21 [PASS]
+2026-06-06 13:44:55,743 - INFO - fact_portfolio_holdings: Raw=322, Cleaned=322, DB=322 [PASS]
+2026-06-06 13:44:55,743 - INFO - fact_benchmark_indices: Raw=8050, Cleaned=8050, DB=8050 [PASS]
+2026-06-06 13:44:55,744 - INFO - 
+============================================================
+2026-06-06 13:44:55,744 - INFO - DATA CLEANING AND DATABASE LOADING COMPLETE
+2026-06-06 13:44:55,744 - INFO - ============================================================
+2026-06-06 13:44:55,744 - INFO - Database: bluestock_mf.db
+2026-06-06 13:44:55,744 - INFO - Cleaned CSVs: data/processed/
+2026-06-06 13:44:55,744 - INFO - Schema: schema.sql
