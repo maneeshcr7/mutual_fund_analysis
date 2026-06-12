@@ -133,6 +133,55 @@ def main():
         for horizon in ["short", "medium", "long"]:
             recommend_by_profile(risk, horizon, top_n=3)
 
+    # Demo: Simple risk-based recommender
+    print("\n\n--- Simple Risk-Based Recommender ---")
+    for risk in ["Low", "Moderate", "High"]:
+        recommend_by_risk(risk, top_n=3)
+
+
+def recommend_by_risk(risk_appetite, top_n=3):
+    """Simple fund recommender: input risk appetite, output top N funds by Sharpe.
+
+    Args:
+        risk_appetite: 'Low', 'Moderate', or 'High'
+        top_n: number of funds to recommend (default 3)
+
+    Risk mapping:
+        Low      -> risk_grade: Low, Moderate
+        Moderate -> risk_grade: Moderate, Moderately High
+        High     -> risk_grade: High, Very High
+    """
+    risk_map = {
+        "Low": ["Low", "Moderate"],
+        "Moderate": ["Moderate", "Moderately High"],
+        "High": ["High", "Very High"]
+    }
+    valid = risk_map.get(risk_appetite)
+    if not valid:
+        print("Invalid risk appetite. Choose: Low, Moderate, High")
+        return None
+
+    perf_df = pd.read_csv(DATA_DIR / "07_scheme_performance.csv")
+    filtered = perf_df[perf_df["risk_grade"].isin(valid)].copy()
+    filtered = filtered.dropna(subset=["sharpe_ratio"])
+    top = filtered.nlargest(top_n, "sharpe_ratio")
+
+    result = top[["scheme_name", "category", "risk_grade", "sharpe_ratio",
+                   "return_3yr_pct", "expense_ratio_pct", "aum_crore"]].copy()
+    result = result.reset_index(drop=True)
+    result.index = result.index + 1
+    result.index.name = "Rank"
+
+    print("============================================")
+    print("  FUND RECOMMENDATION")
+    print("  Risk Appetite:", risk_appetite)
+    print("  Matching risk grades:", ", ".join(valid))
+    print("  Ranked by: Sharpe Ratio")
+    print("============================================")
+    print()
+    print(result.to_string())
+    return result
+
 
 if __name__ == "__main__":
     main()
