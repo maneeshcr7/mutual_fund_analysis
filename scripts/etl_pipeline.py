@@ -1,13 +1,32 @@
 """
 Data Ingestion Script for Mutual Fund Analysis
-Loads and explores 10 CSV datasets, prints shape, dtypes, and head.
+===============================================
+
+Loads and explores 10 CSV datasets, performs initial data quality checks,
+and prints shape, dtypes, and head for each dataset.
+
+This script is part of the Bluestock Mutual Fund Capstone Project.
+
+Functions:
+    load_and_explore_dataset: Load a single CSV and perform exploration
+    main: Orchestrate loading of all 10 datasets
+
+Author: Bluestock Capstone Project
+Version: 1.0
 """
 
 import pandas as pd
-import os
+import logging
 from pathlib import Path
 
-# Define the data directory
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Define the data directory using pathlib for cross-platform compatibility
 DATA_DIR = Path(__file__).parent.parent / "data_1" / "Bluestock_MF_Datasets"
 
 # List of expected CSV files (10 datasets)
@@ -27,52 +46,58 @@ CSV_FILES = [
 
 def load_and_explore_dataset(file_path: Path, dataset_name: str) -> pd.DataFrame:
     """
-    Load a CSV dataset and print exploration details.
+    Load a CSV dataset and perform exploration analysis.
+    
+    This function loads a CSV file, displays its shape, data types,
+    first few rows, and checks for anomalies including missing values,
+    duplicates, and potential data type issues.
     
     Args:
-        file_path: Path to the CSV file
-        dataset_name: Name of the dataset for display
+        file_path (Path): Path to the CSV file.
+        dataset_name (str): Name of the dataset for display purposes.
         
     Returns:
-        Loaded DataFrame
+        pd.DataFrame: Loaded DataFrame, or None if loading fails.
+        
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        Exception: For any other loading errors.
     """
-    print("=" * 80)
-    print(f"DATASET: {dataset_name}")
-    print("=" * 80)
+    logger.info("=" * 60)
+    logger.info(f"DATASET: {dataset_name}")
+    logger.info("=" * 60)
     
     try:
         # Load the dataset
         df = pd.read_csv(file_path)
         
-        # Print shape
-        print(f"\n📊 Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+        # Log shape
+        logger.info(f"Shape: {df.shape[0]} rows × {df.shape[1]} columns")
         
-        # Print data types
-        print(f"\n📋 Data Types:")
-        print(df.dtypes)
+        # Log data types
+        logger.info(f"Data Types:\n{df.dtypes}")
         
-        # Print first few rows
-        print(f"\n👀 First 5 rows:")
-        print(df.head().to_string())
+        # Log first few rows
+        logger.info(f"First 5 rows:\n{df.head().to_string()}")
         
         # Check for anomalies
-        print(f"\n⚠️  Anomaly Check:")
+        logger.info("Anomaly Check:")
         
         # Check for missing values
         missing = df.isnull().sum()
         if missing.any():
-            print(f"  - Missing values detected:")
+            logger.warning("Missing values detected:")
             for col, count in missing[missing > 0].items():
-                print(f"    • {col}: {count} missing ({count/len(df)*100:.1f}%)")
+                logger.warning(f"  {col}: {count} missing ({count/len(df)*100:.1f}%)")
         else:
-            print(f"  - No missing values")
+            logger.info("No missing values")
         
         # Check for duplicate rows
         duplicates = df.duplicated().sum()
         if duplicates > 0:
-            print(f"  - Duplicate rows: {duplicates}")
+            logger.warning(f"Duplicate rows: {duplicates}")
         else:
-            print(f"  - No duplicate rows")
+            logger.info("No duplicate rows")
         
         # Check for potential data type issues
         for col in df.columns:
@@ -80,35 +105,42 @@ def load_and_explore_dataset(file_path: Path, dataset_name: str) -> pd.DataFrame
                 # Check if numeric columns are stored as strings
                 try:
                     pd.to_numeric(df[col].dropna().head(100))
-                    print(f"  - ⚠️  Column '{col}' might be numeric but stored as object")
+                    logger.warning(f"Column '{col}' might be numeric but stored as object")
                 except (ValueError, TypeError):
                     pass
         
-        print("\n")
         return df
         
     except FileNotFoundError:
-        print(f"❌ File not found: {file_path}")
-        print(f"   Please ensure the file exists in {DATA_DIR}\n")
+        logger.error(f"File not found: {file_path}")
+        logger.error(f"Please ensure the file exists in {DATA_DIR}")
         return None
     except Exception as e:
-        print(f"❌ Error loading {dataset_name}: {str(e)}\n")
+        logger.error(f"Error loading {dataset_name}: {str(e)}")
         return None
 
 
 def main():
-    """Main function to load and explore all datasets."""
-    print("\n" + "=" * 80)
-    print("MUTUAL FUND DATA INGESTION")
-    print("=" * 80 + "\n")
+    """
+    Main function to load and explore all datasets.
+    
+    Orchestrates the loading of all 10 CSV datasets, performs initial
+    exploration, and provides a summary of the ingestion process.
+    
+    Returns:
+        dict: Dictionary mapping filenames to loaded DataFrames.
+    """
+    logger.info("=" * 60)
+    logger.info("MUTUAL FUND DATA INGESTION")
+    logger.info("=" * 60)
     
     # Check if data directory exists
     if not DATA_DIR.exists():
-        print(f"❌ Data directory not found: {DATA_DIR}")
-        print("   Creating directory structure...")
+        logger.error(f"Data directory not found: {DATA_DIR}")
+        logger.info("Creating directory structure...")
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        print(f"   Please place CSV files in {DATA_DIR}")
-        return
+        logger.info(f"Please place CSV files in {DATA_DIR}")
+        return {}
     
     # Load each dataset
     datasets = {}
@@ -120,20 +152,20 @@ def main():
             datasets[csv_file] = df
     
     # Summary
-    print("=" * 80)
-    print("INGESTION SUMMARY")
-    print("=" * 80)
-    print(f"Total datasets expected: {len(CSV_FILES)}")
-    print(f"Successfully loaded: {len(datasets)}")
-    print(f"Missing files: {len(CSV_FILES) - len(datasets)}")
+    logger.info("=" * 60)
+    logger.info("INGESTION SUMMARY")
+    logger.info("=" * 60)
+    logger.info(f"Total datasets expected: {len(CSV_FILES)}")
+    logger.info(f"Successfully loaded: {len(datasets)}")
+    logger.info(f"Missing files: {len(CSV_FILES) - len(datasets)}")
     
     if len(datasets) < len(CSV_FILES):
-        print("\nMissing files:")
+        logger.warning("Missing files:")
         for csv_file in CSV_FILES:
             if csv_file not in datasets:
-                print(f"  - {csv_file}")
+                logger.warning(f"  {csv_file}")
     
-    print("\n✅ Data ingestion complete!")
+    logger.info("Data ingestion complete!")
     return datasets
 
 

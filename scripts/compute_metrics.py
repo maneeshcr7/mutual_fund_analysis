@@ -1,24 +1,62 @@
 """
 Compute Performance Metrics for Mutual Fund Analysis
-Sharpe, Sortino, Alpha, Beta, Max Drawdown, VaR
+=====================================================
+
+Computes key performance metrics from first principles using daily NAV data:
+- Sharpe Ratio: Risk-adjusted return measure
+- Sortino Ratio: Downside risk-adjusted return
+- Alpha & Beta: OLS regression against benchmark
+- CAGR: Compound Annual Growth Rate
+- Maximum Drawdown: Largest peak-to-trough decline
+- Value at Risk (VaR): Potential loss at given confidence level
+
+All metrics are annualized using 252 trading days.
+
+Functions:
+    load_data: Load NAV, benchmark, performance, and fund master data
+    compute_daily_returns: Calculate daily percentage returns
+    compute_cagr: Calculate Compound Annual Growth Rate
+    compute_sharpe: Calculate Sharpe Ratio
+    compute_sortino: Calculate Sortino Ratio
+    compute_alpha_beta: Calculate Alpha and Beta via OLS regression
+    compute_max_drawdown: Calculate Maximum Drawdown
+    compute_var: Calculate Value at Risk
+    main: Orchestrate metric computation for all funds
+
+Author: Bluestock Capstone Project
+Version: 1.0
 """
 
 import pandas as pd
 import numpy as np
 from scipy import stats
-import os
-import sys
+import logging
 from pathlib import Path
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Use pathlib for cross-platform paths
 WORKSPACE = Path(__file__).parent.parent
 DATA_DIR = WORKSPACE / "data_1" / "Bluestock_MF_Datasets"
+
+# Constants
 RF = 0.065  # Risk-free rate (RBI repo rate proxy)
-TRADING_DAYS = 252
+TRADING_DAYS = 252  # Number of trading days per year
 
 
 def load_data():
-    """Load NAV and benchmark data."""
+    """
+    Load NAV, benchmark, performance, and fund master data.
+    
+    Returns:
+        tuple: (nav_df, bench_df, perf_df, fm_df) - DataFrames for
+               NAV history, benchmark indices, scheme performance, and fund master.
+    """
     nav_df = pd.read_csv(DATA_DIR / "02_nav_history.csv", parse_dates=["date"])
     bench_df = pd.read_csv(DATA_DIR / "10_benchmark_indices.csv", parse_dates=["date"])
     perf_df = pd.read_csv(DATA_DIR / "07_scheme_performance.csv")
@@ -27,14 +65,34 @@ def load_data():
 
 
 def compute_daily_returns(nav_df):
-    """Compute daily returns: nav_t / nav_{t-1} - 1"""
+    """
+    Compute daily returns from NAV data.
+    
+    Formula: daily_return = nav_t / nav_{t-1} - 1
+    
+    Args:
+        nav_df (pd.DataFrame): DataFrame with columns ['date', 'amfi_code', 'nav'].
+        
+    Returns:
+        pd.DataFrame: Daily returns indexed by date, columns are AMFI codes.
+    """
     nav_pivot = nav_df.pivot(index="date", columns="amfi_code", values="nav").sort_index()
     daily_returns = nav_pivot.pct_change().dropna()
     return daily_returns
 
 
 def compute_cagr(nav_series):
-    """Compute CAGR: (NAV_end / NAV_start) ^ (1/n) - 1"""
+    """
+    Compute Compound Annual Growth Rate (CAGR).
+    
+    Formula: CAGR = (NAV_end / NAV_start) ^ (1/n) - 1
+    
+    Args:
+        nav_series (pd.Series): Time series of NAV values with datetime index.
+        
+    Returns:
+        float: CAGR as a decimal (e.g., 0.15 for 15%), or np.nan if insufficient data.
+    """
     nav_clean = nav_series.dropna()
     if len(nav_clean) < 2:
         return np.nan
@@ -49,13 +107,41 @@ def compute_cagr(nav_series):
 
 
 def compute_sharpe(returns):
-    """Sharpe Ratio: (Rp - Rf) / Std(Rp) * sqrt(252)"""
+    """
+    Compute Sharpe Ratio.
+    
+    Formula: Sharpe = (Rp - Rf) / Std(Rp) * sqrt(252)
+    
+    Where:
+        Rp = mean daily return
+        Rf = daily risk-free rate (annual rate / 252)
+        Std(Rp) = standard deviation of daily returns
+    
+    Args:
+        returns (pd.Series): Daily return series.
+        
+    Returns:
+        float: Annualized Sharpe Ratio.
+    """
     excess = returns.mean() - RF / TRADING_DAYS
     return (excess / returns.std()) * np.sqrt(TRADING_DAYS)
 
 
 def compute_sortino(returns):
-    """Sortino Ratio: (Rp - Rf) / Std(downside) * sqrt(252)"""
+    """
+    Compute Sortino Ratio.
+    
+    Formula: Sortino = (Rp - Rf) / Std(downside) * sqrt(252)
+    
+    Where:
+        Std(downside) = standard deviation of negative returns only
+    
+    Args:
+        returns (pd.Series): Daily return series.
+        
+    Returns:
+        float: Annualized Sortino Ratio, or np.inf if no downside returns.
+    """
     excess = returns.mean() - RF / TRADING_DAYS
     downside = returns[returns < 0]
     if len(downside) == 0:
@@ -64,7 +150,21 @@ def compute_sortino(returns):
 
 
 def compute_alpha_beta(fund_returns, bench_returns):
-    """OLS regression: Alpha = intercept * 252, Beta = slope"""
+    """
+    Compute Alpha and Beta via OLS regression against benchmark.
+    
+    Formula:
+        Alpha = intercept * 252 (annualized)
+        Beta = slope of regression line
+    
+    Args:
+        fund_returns (pd.Series): Daily returns of the fund.
+        bench_returns (pd.Series): Daily returns of the benchmark.
+        
+    Returns:
+        tuple: (alpha, beta, r_squared) - Annualized alpha, beta, and R-squared.
+               Returns (np.nan, np.nan, np.nan) if insufficient data.
+    """
     common = fund_returns.index.intersection(bench_returns.index)
     if len(common) < 60:
         return np.nan, np.nan, np.nan
@@ -75,21 +175,50 @@ def compute_alpha_beta(fund_returns, bench_returns):
 
 
 def compute_max_drawdown(nav_series):
-    """Max Drawdown: min(NAV / running_max - 1)"""
+    """
+    Compute Maximum Drawdown.
+    
+    Formula: Max Drawdown = min(NAV / running_max - 1)
+    
+    Args:
+        nav_series (pd.Series): Time series of NAV values.
+        
+    Returns:
+        tuple: (max_drawdown, drawdown_date) - Maximum drawdown value and
+               the date it occurred.
+    """
     running_max = nav_series.cummax()
     drawdown = nav_series / running_max - 1
     return drawdown.min(), drawdown.idxmin()
 
 
 def compute_var(returns, confidence=0.95):
-    """Historical VaR at given confidence level."""
+    """
+    Compute Historical Value at Risk (VaR).
+    
+    Args:
+        returns (pd.Series): Daily return series.
+        confidence (float): Confidence level (e.g., 0.95 for 95%).
+        
+    Returns:
+        float: VaR as a positive number representing potential loss.
+    """
     return -np.percentile(returns.dropna(), (1 - confidence) * 100)
 
 
 def main():
-    print("=" * 60)
-    print("COMPUTING PERFORMANCE METRICS")
-    print("=" * 60)
+    """
+    Main function to compute performance metrics for all funds.
+    
+    Orchestrates the computation of all performance metrics for each fund
+    and saves results to a CSV file.
+    
+    Returns:
+        pd.DataFrame: DataFrame containing all computed metrics for each fund.
+    """
+    logger.info("=" * 60)
+    logger.info("COMPUTING PERFORMANCE METRICS")
+    logger.info("=" * 60)
 
     nav_df, bench_df, perf_df, fm_df = load_data()
     daily_returns = compute_daily_returns(nav_df)
@@ -135,9 +264,9 @@ def main():
     results_df = pd.DataFrame(results).sort_values("sharpe_ratio", ascending=False)
     results_df.to_csv(WORKSPACE / "computed_metrics.csv", index=False)
 
-    print("\nTop 10 by Sharpe Ratio:")
-    print(results_df[["scheme_name", "cagr", "sharpe_ratio", "alpha_annualized", "beta", "max_drawdown"]].head(10).to_string(index=False))
-    print("\nMetrics saved to computed_metrics.csv")
+    logger.info("Top 10 by Sharpe Ratio:")
+    logger.info(f"\n{results_df[['scheme_name', 'cagr', 'sharpe_ratio', 'alpha_annualized', 'beta', 'max_drawdown']].head(10).to_string(index=False)}")
+    logger.info("Metrics saved to computed_metrics.csv")
     return results_df
 
 
